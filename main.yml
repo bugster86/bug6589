@@ -31,13 +31,15 @@
   
   tasks:
   - block:
-    - name: Conferma la volontà di voler aggiornare
-      pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
-      register: conferma
+    - block:
+      - name: Conferma la volontà di voler aggiornare
+        pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
+        register: conferma
+      - meta: end_play
+        when: not conferma.user_input == "yes"
       when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
       
-    - meta: end_play
-      when: not conferma.user_input == "yes"
+    
 
     - name: resoconto in file {{ logfile }}
       shell: echo "Applicato il bug {{bug}} (UPGRADE_EASYCIM 3.6.3) dall'utente $USER in data $(date +%d-%m-%Y_%H:%M:%S) sui server {{inventory_hostname}} " >> {{ logfile }}
