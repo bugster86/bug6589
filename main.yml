@@ -75,8 +75,14 @@
   gather_facts: true
   any_errors_fatal: true
   
+  vars:
+    jdk8_path: ''
+    jd8_shortversion: '' # questa la usiamo solo per controllare l'output del comando version
+    jdk8_version: ''
+  
   tasks: 
   - include: include/mapping_applications.yml
+  - include: include/jdk8.yml
   
 - name: Inserimento su nginx delle nuove regole per la Callback
   hosts: "{{ balancer }}"

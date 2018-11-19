@@ -1,0 +1,27 @@
+- name: verifico la versione di java attuale
+  shell: "java -version 2>&1 | grep {{ jd8_shortversion }}"
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  register: is_1_8
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin"
+
+# se l'ecas non ha una JDK 1.8 devo aggiornare
+- block:
+  - name: scompatto la jdk 1.8
+    unarchive:
+      src: "{{ jdk8_path }}"
+      dest: /usr/java/
+      owner: root
+      group: root
+      mode: 0755
+   - name: elimino il link /usr/java/latest
+     file: path=/usr/java/latest state=absent
+   - name: ricreo il link  /usr/java/latest
+     file: 
+       state: link 
+       src: {{ jdk8_version }} 
+       dest: /usr/java/latest
+  
+  when: is_1_8 != 0
