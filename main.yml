@@ -164,3 +164,24 @@
   tasks: 
   - include: include/etl_step2.yml
    
+- name: Sezione script timezone mysql
+  hosts: "{{ database_master }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks:
+  - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
+    unarchive:
+       src: "{{ src_rdp }}/populate_time_zone.tar.gz"
+       dest: /tmp/
+       owner: root
+       group: root
+       mode: 0777
+  - name: eseguo lo script USE_ME.sh
+    shell: /tmp/USE_ME.sh
+    failed_when: false
+       
+    
