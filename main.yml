@@ -83,6 +83,10 @@
   gather_facts: true
   any_errors_fatal: true
   
+  
+  
+  
+  
   tasks:
   - include: include/add_nginx_rules.yml
   
@@ -97,4 +101,12 @@
   - service: name=nginx state=reloaded
     when: sintassi_nginx.rc == 0
     listen: "reload_nginx"
-    
+
+- name: stoppa l'ormai inutile pentaho
+  hosts: "{{ pentaho }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks: 
+  - include: include/present_tomcat.yml
+  
