@@ -1,1 +1,2 @@
-mongo_primary: 
+mongo_primary:
+balancer: []

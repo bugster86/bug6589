@@ -77,3 +77,21 @@
   
   tasks: 
   - include: include/mapping_applications.yml
+  
+- name: Inserimento su nginx delle nuove regole per la Callback
+  hosts: "{{ balancer }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks:
+  - include: include/add_nginx_rules.yml
+
+  handlers:
+  - shell: nginx -t
+    changed_when: false
+    register: sintassi_nginx
+    listen: "reload_nginx"
+  - service: name=nginx state=reloaded
+    when: sintassi_nginx.rc == 0
+    listen: "reload_nginx"
+    
