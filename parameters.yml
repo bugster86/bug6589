@@ -1,3 +1,5 @@
 mongo_primary:
 balancer: []
-pentaho: 
+pentaho:
+etl:
+database_master:
