@@ -152,7 +152,15 @@
   tasks:
   - include: include/install_report.yml
 
-
-# 
-# - include: etl_step2.yml
-#   when: inventory_hostname == etl    
+- name: eseguo la seconda parte degli step sul server etl
+  hosts: "{{ etl }}"
+  
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks: 
+  - include: include/etl_step2.yml
+   
