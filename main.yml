@@ -123,18 +123,25 @@
   any_errors_fatal: true
   
   vars:
-    src_rdp: ''
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks: 
-  - include: etl_step1.yml
+  - include: include/etl_step1.yml
+
+- name: eseguo le modifiche su database master
+  hosts: "{{ database_master }}"
+  
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+    cartella: /tmp/liquibase_pentaho/3.3.0.4
+  
+  tasks:
+  - include: include/database_step.yml 
 
 
-# - include: etl_step1.yml
-#   when: inventory_hostname == etl
-# 
-# - include: database_step.yml
-#   when: inventory_hostname == database
-# 
 # - include: install_report.yml
 #   when: "'ecas' in inventory_hostname"  
 # 
