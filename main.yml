@@ -52,3 +52,21 @@
     delegate_to: localhost
     delegate_facts: true
     run_once: true
+
+- name: Modifica URL ec3FormConfigurator
+  hosts: "{{ mongo_primary }}"
+  any_errors_fatal: true
+  
+  tasks:
+  - name: copia del file update_path_form.js
+    copy:
+      dest: /tmp/
+      src: files/update_path_form.js
+      owner: root
+      group: root
+      mode: 0777
+      
+  - shell: mongo admanager /tmp/update_path_form.js
+    
+  - name: elimina il file /tmp/update_path_form.js
+    file: path=/tmp/update_path_form state=absent 

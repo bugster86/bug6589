@@ -1,0 +1,1 @@
+db.profiles.update( {},{$set: { "multiscript.ec3FormConfigurator" : "/EasyCIM/fc/main" } }, {multi: true} )
