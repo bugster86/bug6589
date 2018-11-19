@@ -55,6 +55,7 @@
 
 - name: Modifica URL ec3FormConfigurator
   hosts: "{{ mongo_primary }}"
+  gather_facts: true
   any_errors_fatal: true
   
   tasks:
@@ -65,8 +66,14 @@
       owner: root
       group: root
       mode: 0777
-      
-  - shell: mongo admanager /tmp/update_path_form.js
-    
+  - shell: mongo admanager /tmp/update_path_form.js  
   - name: elimina il file /tmp/update_path_form.js
     file: path=/tmp/update_path_form state=absent 
+    
+- name: mapping delle applicazioni sugli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks: 
+  - include: include/mapping_applications.yml

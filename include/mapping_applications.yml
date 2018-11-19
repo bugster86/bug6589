@@ -1,0 +1,97 @@
+# stampa la lista delle applicazioni
+- name: stampo la lista delle applicazioni all'interno del file /tmp/lista
+  shell: asadmin --terse list-applications > /tmp/lista
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: controllo la presenza di agentdesktopmanager-
+  lineinfile: dest=/tmp/lista line="agentdesktopmanager-" check_mode=yes
+  register: check_ad_manager
+
+# Se è presente allora setto il fact
+- block: 
+  - shell: "grep "agentdesktopmanager-" /tmp/lista | awk '{print $1}'"
+    check_mode: false
+    changed_when: false
+    failed_when: false
+    register: agentdesktopmanager_version
+  - set_fact:
+      admanager: "{{ agentdesktopmanager_version.stdout }}"     
+  when: check_ad_manager.changed == false
+
+- name: controllo la presenza di EasyCIM-
+  lineinfile: dest=/tmp/lista line="EasyCIM-" check_mode=yes
+  register: check_easycim
+  
+- block:
+  - shell: "grep "EasyCIM-" /tmp/lista | awk '{print $1}'"
+    check_mode: false
+    changed_when: false
+    failed_when: false
+    register: easycim_version
+  - set_fact:
+      easycim: "{{ easycim_version.stdout }}"   
+  when: check_easycim.changed == false 
+
+
+- name: controllo la presenza di easyintegration-
+  lineinfile: dest=/tmp/lista line="easyintegration-" check_mode=yes
+  register: check_easyintegration
+  
+- block:
+  - shell: "grep "easyintegration-" /tmp/lista | awk '{print $1}'"
+    check_mode: false
+    changed_when: false
+    failed_when: false
+    register: easyintegration_version
+  - set_fact:
+      easyintegration: "{{ easyintegration_version.stdout }}"   
+  when: check_easyintegration.changed == false 
+
+
+- name: controllo la presenza di TaskManagerSystem-
+  lineinfile: dest=/tmp/lista line="TaskManagerSystem-" check_mode=yes
+  register: check_taskmanager
+  
+- block:
+  - shell: "grep "TaskManagerSystem-" /tmp/lista | awk '{print $1}'"
+    check_mode: false
+    changed_when: false
+    failed_when: false
+    register: taskmanager_version
+  - set_fact:
+      taskmanager: "{{ taskmanager_version.stdout }}"   
+  when: check_taskmanager.changed == false
+
+- name: controllo la presenza di WorkflowManager-
+  lineinfile: dest=/tmp/lista line="WorkflowManager-" check_mode=yes
+  register: check_workflow
+  
+- block:
+  - shell: "grep "WorkflowManager-" /tmp/lista | awk '{print $1}'"
+    check_mode: false
+    changed_when: false
+    failed_when: false
+    register: workflow_version
+  - set_fact:
+      workflow: "{{ workflow_version.stdout }}"   
+  when: check_workflow.changed == false
+
+- shell: "egrep -i "FormConfigurator|Callback" /tmp/lista | awk '{print $1}'"
+  check_mode: false
+  failed_when: false
+  changed_when: false
+  register: useless_apps
+
+## undeploy delle componenti che non sono più necessarie
+- name: undeploy FormConfigurator e Callback
+  shell: "asadmin undeploy {{ item }}"
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
+  failed_when: false
+  with_items: "{{ useless_apps.stdout_lines }}"
+
+  
