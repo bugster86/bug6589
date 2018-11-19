@@ -141,9 +141,18 @@
   tasks:
   - include: include/database_step.yml 
 
+- name: Installo i report su tutti gli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks:
+  - include: include/install_report.yml
 
-# - include: install_report.yml
-#   when: "'ecas' in inventory_hostname"  
+
 # 
 # - include: etl_step2.yml
 #   when: inventory_hostname == etl    

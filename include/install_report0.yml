@@ -1,0 +1,61 @@
+# Se esiste la cartella /opt/pentaho/statistics ci possiamo copiare dentro la cartella lib
+- stat: path=/opt/pentaho/statistics
+  register: dirlib
+  
+- copy: 
+    src: "{{ src_rdp }}/lib"
+    dest: /opt/pentaho/statistics/
+    owner: root
+    group: root
+    mode: 0755
+  when: dirlib.stat.exists
+
+
+# Per ogni ecas su cui stiamo lavorando creiamo l'utente ctreport con password ctreport per la
+# comunicazione con LOCALIZATION
+- name: creo l'utente ctreport
+  user:
+    comment: 'utente di comunicazione per LOCALIZATION report'
+    name: 'ctreport'
+    password: "{{ 'ctreport' | password_hash('sha512') }}"
+  
+- template:
+    dest: /tmp/dump.sql
+    src: template/insert_LOC.j2
+    owner: root
+    group: root
+    mode: 0777
+  delegate_to: "{{ database_master }}"    
+  
+- name: "inserisco la stringa di LOCALIZATION su {{ database_master }}"
+  shell: "mysql statistics_config < /tmp/dump.sql"
+  delegate_to: "{{ database_master }}"
+
+
+
+# installiamo la tar.gz dei report su tutti gli ecas in cui
+# è presente la cartella /var/easycim3
+# è attivo glassfish
+
+# In questo modo anche se attualmente non è presente EasyCIM.war su quel server, può essere già pronto per il futuro
+
+- name: controlla la presenza della cartella /var/easycim3
+  stat: path=/var/easycim3
+  register: dir1
+
+- name: controllo che glassfish  sia attivo
+  shell: ps -ef | grep glassfish | grep -v grep
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  register: glassfish_attivo
+  
+- block:
+  - include: create_pool_statistics_config.yml
+  - include: set_report.yml   
+  
+  when:
+  - dir1.stat.exists
+  - glassfish_attivo.rc == 0    
+  
+
