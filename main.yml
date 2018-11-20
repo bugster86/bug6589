@@ -200,6 +200,21 @@
   - name: "Creo la cartella {{ dir_upload }}"
     file: state=directory path="{{ dir_upload }}" owner=root group=root mode=0777
   - include: include/upload_apps.yml
+  
+- name: Lancio lo script di autodeploy
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  serial: 1 # L'operazione è eseguita in maniera seriale sugli ecas
+  
+  vars:
+    dir_upload: '/home/reicom/ec363/'
+  
+  tasks:
+  - shell: /usr/local/bin/autodeploy.sh
+    args:
+     chdir: "{{ dir_upload }}"
+
     
     
        
