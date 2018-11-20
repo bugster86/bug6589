@@ -164,7 +164,7 @@
   tasks: 
   - include: include/etl_step2.yml
    
-- name: Sezione script timezone mysql
+- name: Sezione script timezone mysql + configurazione su tabella easycim.level
   hosts: "{{ database_master }}"
   gather_facts: true
   any_errors_fatal: true
@@ -183,5 +183,7 @@
   - name: eseguo lo script USE_ME.sh
     shell: /tmp/USE_ME.sh
     failed_when: false
+  - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
+    
        
     
