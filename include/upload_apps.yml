@@ -1,0 +1,72 @@
+# AgentDesktopMGR
+- name: upload war AgentDesktopMGR
+  copy:
+        group: root
+        owner: root
+        mode: 0777
+        src: "{{ item }}"
+        dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ apps_src }}/agentdesktopmanager-*
+  when: admanager == true
+
+# Easycim
+- name: upload war EasyCIM
+  copy:
+        group: root
+        owner: root
+        mode: 0777
+        src: "{{ item }}"
+        dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ apps_src }}/EasyCIM-*
+  when: easycim == true
+
+# easyintegration
+- name: upload war easyintegration
+  copy:
+        group: root
+        owner: root
+        mode: 0777
+        src: "{{ item }}"
+        dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ easyintegration_src }}/easyintegration-*
+  when: easyintegration == true
+
+# taskmanager
+- name: upload war task manager
+  copy:
+      group: root
+      owner: root
+      mode: 0777
+      src: "{{ item }}"
+      dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ apps_src }}/TaskManagerSystem-*
+  when: taskmanager == true
+  
+# workflow
+- name: upload war workflow
+  copy:
+      group: root
+      owner: root
+      mode: 0777
+      src: "{{ item }}"
+      dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ apps_src }}/WorkflowManager-*
+  when: workflow == true
+
+# callback
+
+- name: upload war EasyCallBackRemapper-
+  copy:
+      group: root
+      owner: root
+      mode: 0777
+      src: "{{ item }}"
+      dest: "{{ dir_upload }}"
+  with_fileglob:
+  - {{ apps_src }}/EasyCallBackRemapper-*
+  when: callback == true

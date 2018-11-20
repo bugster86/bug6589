@@ -184,6 +184,23 @@
     shell: /tmp/USE_ME.sh
     failed_when: false
   - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
+  
+- name: Copio le nuove applicazioni sugli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  # definisco dove trovare i war delle applicazioni su filesystem
+  vars:
+    dir_upload: '/home/reicom/ec363/'
+    easyintegration_src: ''
+    apps_src: ''
+    
+  tasks:
+  - name: "Creo la cartella {{ dir_upload }}"
+    file: state=directory path="{{ dir_upload }}" owner=root group=root mode=0777
+  - include: include/upload_apps.yml
+    
     
        
     
