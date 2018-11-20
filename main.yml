@@ -84,7 +84,7 @@
   - include: include/mapping_applications.yml
   - include: include/jdk8.yml
   
-- name: Inserimento su nginx delle nuove regole per la Callback
+- name: Operazioni sugli NGINX
   hosts: "{{ balancer }}"
   gather_facts: true
   any_errors_fatal: true
@@ -94,7 +94,6 @@
   
   
   tasks:
-  - include: include/add_nginx_rules.yml
   
   # Siamo già sulle macchine balancer e possiamo applicare comodamente il role 6379
   - include_role: name=6379
