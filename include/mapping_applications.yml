@@ -80,6 +80,8 @@
   
 - name: recupero l'eventuale context root dell'applicazione Callback
   shell: asadmin get "*" | grep -i callback | grep context
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
   changed_when: false
   failed_when: false
   check_mode: false
@@ -96,5 +98,16 @@
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
   failed_when: false
   with_items: "{{ useless_apps.stdout_lines }}"
+  
+- stat: path=/etc/opt/reitek/easyintegration/config/query.properties
+  register: query_properties
+- name: aggiorno il file  /etc/opt/reitek/easyintegration/config/query.properties
+  copy:
+    src: "{{ src_query_properties }}"
+    dest: /etc/opt/reitek/easyintegration/config/query.properties
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
 
   

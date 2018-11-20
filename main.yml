@@ -79,6 +79,7 @@
     jdk8_path: ''
     jd8_shortversion: '' # questa la usiamo solo per controllare l'output del comando version
     jdk8_version: ''
+    src_query_properties: ''
   
   tasks: 
   - include: include/mapping_applications.yml
