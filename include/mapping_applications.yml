@@ -1,3 +1,14 @@
+# Assumo che inizialmente non ci sia nessuna applicazione sul server
+- set_fact:
+    admanager: false
+    easycim: false
+    easyintegration: false
+    taskmanager: false
+    workflow: false
+    callback: true 
+
+
+
 # stampa la lista delle applicazioni
 - name: stampo la lista delle applicazioni all'interno del file /tmp/lista
   shell: asadmin --terse list-applications > /tmp/lista
@@ -10,30 +21,18 @@
 - name: controllo la presenza di agentdesktopmanager-
   lineinfile: dest=/tmp/lista line="agentdesktopmanager-" check_mode=yes
   register: check_ad_manager
-
 # Se è presente allora setto il fact
-- block: 
-  - shell: "grep "agentdesktopmanager-" /tmp/lista | awk '{print $1}'"
-    check_mode: false
-    changed_when: false
-    failed_when: false
-    register: agentdesktopmanager_version
-  - set_fact:
-      admanager: "{{ agentdesktopmanager_version.stdout }}"     
+- set_fact:
+      admanager: true     
   when: check_ad_manager.changed == false
+
 
 - name: controllo la presenza di EasyCIM-
   lineinfile: dest=/tmp/lista line="EasyCIM-" check_mode=yes
   register: check_easycim
   
-- block:
-  - shell: "grep "EasyCIM-" /tmp/lista | awk '{print $1}'"
-    check_mode: false
-    changed_when: false
-    failed_when: false
-    register: easycim_version
-  - set_fact:
-      easycim: "{{ easycim_version.stdout }}"   
+- set_fact:
+      easycim: true   
   when: check_easycim.changed == false 
 
 
@@ -41,14 +40,9 @@
   lineinfile: dest=/tmp/lista line="easyintegration-" check_mode=yes
   register: check_easyintegration
   
-- block:
-  - shell: "grep "easyintegration-" /tmp/lista | awk '{print $1}'"
-    check_mode: false
-    changed_when: false
-    failed_when: false
-    register: easyintegration_version
-  - set_fact:
-      easyintegration: "{{ easyintegration_version.stdout }}"   
+
+- set_fact:
+      easyintegration: true
   when: check_easyintegration.changed == false 
 
 
@@ -56,36 +50,45 @@
   lineinfile: dest=/tmp/lista line="TaskManagerSystem-" check_mode=yes
   register: check_taskmanager
   
-- block:
-  - shell: "grep "TaskManagerSystem-" /tmp/lista | awk '{print $1}'"
-    check_mode: false
-    changed_when: false
-    failed_when: false
-    register: taskmanager_version
-  - set_fact:
-      taskmanager: "{{ taskmanager_version.stdout }}"   
+
+- set_fact:
+      taskmanager: true 
   when: check_taskmanager.changed == false
 
 - name: controllo la presenza di WorkflowManager-
   lineinfile: dest=/tmp/lista line="WorkflowManager-" check_mode=yes
   register: check_workflow
   
-- block:
-  - shell: "grep "WorkflowManager-" /tmp/lista | awk '{print $1}'"
-    check_mode: false
-    changed_when: false
-    failed_when: false
-    register: workflow_version
-  - set_fact:
-      workflow: "{{ workflow_version.stdout }}"   
+
+- set_fact:
+      workflow: true   
   when: check_workflow.changed == false
+  
+- name: controllo la presenza di EasyCallBack
+  lineinfile: dest=/tmp/lista line="EasyCallBack" check_mode=yes
+  register: check_callback
+    
+  - set_fact:
+      callback: true   
+  when: check_callback.changed == false  
 
 - shell: "egrep -i "FormConfigurator|Callback" /tmp/lista | awk '{print $1}'"
   check_mode: false
   failed_when: false
   changed_when: false
   register: useless_apps
-
+  
+- name: recupero l'eventuale context root dell'applicazione Callback
+  shell: asadmin get "*" | grep -i callback | grep context
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  register: context1
+  
+- set_fact:
+      context_cb: context1.stdout
+  when: context1.stdout != "" and context1.rc == 0
+  
 ## undeploy delle componenti che non sono più necessarie
 - name: undeploy FormConfigurator e Callback
   shell: "asadmin undeploy {{ item }}"
