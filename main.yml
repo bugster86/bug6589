@@ -78,7 +78,7 @@
   vars:
     jdk8_path: '/mnt/qasr/Vendors/Oracle/JDK/jdk-8u171-linux-x64.tar.gz'
     jdk8_shortversion: '1.8.0_171' # questa la usiamo solo per controllare l'output del comando version
-    jdk8_version: '1.8.0_171'
+    jdk8_version: 'jdk1.8.0_171'
     src_query_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/query.properties'
   
   tasks: 
