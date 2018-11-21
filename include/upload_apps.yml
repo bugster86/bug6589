@@ -7,7 +7,7 @@
         src: "{{ item }}"
         dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ apps_src }}/agentdesktopmanager-*
+  - "{{ apps_src }}/agentdesktopmanager-*"
   when: admanager == true
 
 # Easycim
@@ -19,7 +19,7 @@
         src: "{{ item }}"
         dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ apps_src }}/EasyCIM-*
+  - "{{ apps_src }}/EasyCIM-*"
   when: easycim == true
 
 # easyintegration
@@ -31,7 +31,7 @@
         src: "{{ item }}"
         dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ easyintegration_src }}/easyintegration-*
+  - "{{ easyintegration_src }}/easyintegration-*"
   when: easyintegration == true
 
 # taskmanager
@@ -43,7 +43,7 @@
       src: "{{ item }}"
       dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ apps_src }}/TaskManagerSystem-*
+  - "{{ apps_src }}/TaskManagerSystem-*"
   when: taskmanager == true
   
 # workflow
@@ -55,7 +55,7 @@
       src: "{{ item }}"
       dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ apps_src }}/WorkflowManager-*
+  - "{{ apps_src }}/WorkflowManager-*"
   when: workflow == true
 
 # callback
@@ -68,5 +68,5 @@
       src: "{{ item }}"
       dest: "{{ dir_upload }}"
   with_fileglob:
-  - {{ apps_src }}/EasyCallBackRemapper-*
+  - "{{ apps_src }}/EasyCallBackRemapper-*"
   when: callback == true

@@ -25,7 +25,7 @@
   when: jdk_6589 is defined and jdk_6589.stat.exists == false
   
 - name: eseguo gli Step di liquibase
-  shell: chdir="{{ cartella }}" java -jar liquibase.jar --driver=com.mysql.jdbc.Driver --classpath=mysql-connector-java-5.1.27-bin.jar --changeLogFile={{ item.codice }} --url="jdbc:mysql://"{{ ansible_hostname }}":3306/"{{ item.schema }}"" --username='easycim' --password='3a$yc1m_{{ database.split('-')[0] }}' update
+  shell: chdir="{{ cartella }}" java -jar liquibase.jar --driver=com.mysql.jdbc.Driver --classpath=mysql-connector-java-5.1.27-bin.jar --changeLogFile={{ item.codice }} --url="jdbc:mysql://"{{ ansible_hostname }}":3306/"{{ item.schema }}"" --username='easycim' --password='3a$yc1m_{{ database_master.split('-')[0] }}' update
   environment:
   - PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/opt/glassfish/bin:/usr/java/default:/usr/java/default/bin
   with_items:
