@@ -31,11 +31,18 @@
   
   tasks:
   - block:
+    
+    - set_fact: conferma=true
+    
     - block:
       - name: Conferma la volontà di voler aggiornare
         pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
         register: conferma
-      - meta: end_play
+        
+        
+      - block:
+        - set_fact: conferma=false
+        - meta: end_play              # dico all'applicazione di uscire da questo play ma setto anche il facts a false per non far eseguire gli altri play
         when: not conferma.user_input == "yes"
       when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
       
@@ -59,6 +66,7 @@
   any_errors_fatal: true
   
   tasks:
+  - include: include/check_conferma.yml
   - name: copia del file update_path_form.js
     copy:
       dest: /tmp/
@@ -82,6 +90,7 @@
     src_query_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/query.properties'
   
   tasks: 
+  - include: include/check_conferma.yml
   - include: include/mapping_applications.yml
   - include: include/jdk8.yml
   
@@ -95,7 +104,7 @@
   
   
   tasks:
-  
+  - include: include/check_conferma.yml
   # Siamo già sulle macchine balancer e possiamo applicare comodamente il role 6379
   - include_role: name=6379
     vars:
@@ -117,6 +126,7 @@
   any_errors_fatal: true
   
   tasks: 
+  - include: include/check_conferma.yml
   - include: include/present_tomcat.yml
   
 - name: eseguo la prima parte degli step sul server etl
@@ -129,6 +139,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks: 
+  - include: include/check_conferma.yml
   - include: include/etl_step1.yml
 
 - name: eseguo le modifiche su database master
@@ -142,6 +153,7 @@
     cartella: /tmp/liquibase_pentaho/3.3.0.4
   
   tasks:
+  - include: include/check_conferma.yml
   - include: include/database_step.yml 
 
 - name: Installo i report su tutti gli ecas
@@ -153,6 +165,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks:
+  - include: include/check_conferma.yml
   - include: include/install_report.yml
 
 - name: eseguo la seconda parte degli step sul server etl
@@ -165,6 +178,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks: 
+  - include: include/check_conferma.yml
   - include: include/etl_step2.yml
    
 - name: Sezione script timezone mysql + configurazione su tabella easycim.level
@@ -176,6 +190,7 @@
     src_timezone_script: /mnt/qasr/EasyCIM/Server/3.6.3_RC/scripts
   
   tasks:
+  - include: include/check_conferma.yml
   - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
     unarchive:
        src: "{{ src_timezone_script }}/populate_time_zone.tar.gz"
@@ -200,6 +215,7 @@
     apps_src: ''
     
   tasks:
+  - include: include/check_conferma.yml
   - name: "Creo la cartella {{ dir_upload }}"
     file: state=directory path="{{ dir_upload }}" owner=root group=root mode=0777
   - include: include/upload_apps.yml
@@ -214,6 +230,7 @@
     dir_upload: '/home/reicom/ec363/'
   
   tasks:
+  - include: include/check_conferma.yml
   - shell: /usr/local/bin/autodeploy.sh
     args:
      chdir: "{{ dir_upload }}"

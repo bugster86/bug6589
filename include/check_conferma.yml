@@ -1,0 +1,9 @@
+- block:
+  - debug: msg="Non hai dato conferma. Non eseguo operazioni"
+  - meta: end_play
+  when: conferma == false
+  delegate_to: localhost
+  run_once: true
+
+
+
