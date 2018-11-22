@@ -215,7 +215,7 @@
   
   # definisco dove trovare i war delle applicazioni su filesystem
   vars:
-    dir_upload: '/home/reicom/ec363/'
+    dir_upload: '/tmp/EC363/'
     easyintegration_src: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/'
     apps_src: '/mnt/qasr/EasyCIM/Server/3.6.3_RC/3.6.3-1_RC!!/'
     
@@ -232,7 +232,7 @@
   serial: 1 # L'operazione è eseguita in maniera seriale sugli ecas
   
   vars:
-    dir_upload: '/home/reicom/ec363/'
+    dir_upload: '/tmp/EC363/'
   
   tasks:
   - include: include/check_conferma.yml
