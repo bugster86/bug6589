@@ -67,6 +67,8 @@
   
   tasks:
   - include: include/check_conferma.yml
+    delegate_to: localhost
+    run_once: true
   - name: copia del file update_path_form.js
     copy:
       dest: /tmp/
