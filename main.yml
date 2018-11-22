@@ -30,35 +30,38 @@
     logfile: /var/log/ansible_reitek.log
   
   tasks:
-  - block:
+  - name: resoconto in file {{ logfile }}
+    shell: echo "Applicato il bug {{bug}} (UPGRADE_EASYCIM 3.6.3) dall'utente $USER in data $(date +%d-%m-%Y_%H:%M:%S) sui server {{inventory_hostname}} " >> {{ logfile }}
+    changed_when: false
+    delegate_to: localhost
+
+  - name: resoconto in database ansible
+    shell: mysql --user=ansible_update --password=$(cat /home/password_insert) -e "insert into ansible.bugs values ( '{{bug}}','$USER','$(date +%d-%m-%Y_%H:%M:%S)','{{inventory_hostname}}');"
+    changed_when: false
+    delegate_to: localhost
     
-    - set_fact: conferma=true
     
+  - set_fact: conferma=true
+    delegate_to: localhost
+    delegate_facts: true
+  
+  - block:  
+    - name: Conferma la volontà di voler aggiornare
+      pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
+      register: risposta
+        
+        
     - block:
-      - name: Conferma la volontà di voler aggiornare
-        pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
-        register: risposta
-        
-        
-      - block:
-        - set_fact: conferma=false
-        - meta: end_play              # dico all'applicazione di uscire da questo play ma setto anche il facts a false per non far eseguire gli altri play
-        when: not risposta.user_input == "yes"
-      when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
+      - set_fact: conferma=false
+        delegate_to: localhost
+        delegate_facts: true
+      - meta: end_play              # dico all'applicazione di uscire da questo play ma setto anche il facts a false per non far eseguire gli altri play
+      when: not risposta.user_input == "yes"
+    when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
       
     
 
-    - name: resoconto in file {{ logfile }}
-      shell: echo "Applicato il bug {{bug}} (UPGRADE_EASYCIM 3.6.3) dall'utente $USER in data $(date +%d-%m-%Y_%H:%M:%S) sui server {{inventory_hostname}} " >> {{ logfile }}
-      changed_when: false
 
-    - name: resoconto in database ansible
-      shell: mysql --user=ansible_update --password=$(cat /home/password_insert) -e "insert into ansible.bugs values ( '{{bug}}','$USER','$(date +%d-%m-%Y_%H:%M:%S)','{{inventory_hostname}}');"
-      changed_when: false
-
-    delegate_to: localhost
-    delegate_facts: true
-    run_once: true
 
 - name: Modifica URL ec3FormConfigurator
   hosts: "{{ mongo_primary }}"
@@ -67,8 +70,6 @@
   
   tasks:
   - include: include/check_conferma.yml
-    delegate_to: localhost
-    delegate_facts: true
     run_once: true
     
   - name: copia del file update_path_form.js

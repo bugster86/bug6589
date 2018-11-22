@@ -1,8 +1,6 @@
-- debug: var=conferma
 - block:
-  - debug: msg="Non hai dato conferma. Non eseguo operazioni"
   - meta: end_play
-  when: conferma  is defined and conferma == false
+  when: hostvars['localhost']['conferma'] is defined and hostvars['localhost']['conferma'] == false
   
 
 
