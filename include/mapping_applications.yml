@@ -68,8 +68,8 @@
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
   failed_when: false
   with_items: 
-  - {{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}}
-  - {{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}}
+  - "{{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}}"
+  - "{{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}}"
     
 - stat: path=/etc/opt/reitek/easyintegration/config/query.properties
   register: query_properties
