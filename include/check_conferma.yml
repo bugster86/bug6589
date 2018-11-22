@@ -3,7 +3,6 @@
   - meta: end_play
   when: conferma  is defined and conferma == false
   delegate_to: localhost
-  run_once: true
 
 
 
