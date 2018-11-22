@@ -37,13 +37,13 @@
     - block:
       - name: Conferma la volontà di voler aggiornare
         pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
-        register: conferma
+        register: risposta
         
         
       - block:
         - set_fact: conferma=false
         - meta: end_play              # dico all'applicazione di uscire da questo play ma setto anche il facts a false per non far eseguire gli altri play
-        when: not conferma.user_input == "yes"
+        when: not risposta.user_input == "yes"
       when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
       
     
