@@ -71,12 +71,15 @@
     with_fileglob:
     - "{{ apps_src }}/EasyCallBackRemapper-*"
   
-  - shell: ls -1 EasyCallBackRemapper-*
-    chdir: "{{ dir_upload }}"
+  - shell: "ls -1 EasyCallBackRemapper-*"
+    args:
+       chdir: "{{ dir_upload }}"
     register: callback_app
     
   - name: deploya l'applicazione EasyCallBackRemapper
     shell: asadmin deploy --contextroot ProActiveCallBackV2.0 {{ callback_app.stdout }}
+    args:
+       chdir: "{{ dir_upload }}"
     environment:
           PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
   
