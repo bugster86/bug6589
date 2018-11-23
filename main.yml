@@ -245,7 +245,14 @@
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
     args:
      chdir: "{{ dir_upload }}"
-
+     
+- name: Azioni finali accessorie
+  hosts: all
+  
+  tasks:
+  - include: include/check_conferma.yml
+  - shell: updatedb
+  - shell: systemctl daemon-reload
     
     
        
