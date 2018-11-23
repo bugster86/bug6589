@@ -236,6 +236,10 @@
   
   tasks:
   - include: include/check_conferma.yml
+  # voglio evitare che ci siano dei problemi nell'undeploy delle applicazioni
+  - name: riavvio preventivo del glassfish 
+    service: name=glassfish state=restarted
+  - pause: seconds=10
   - shell: /usr/local/bin/autodeploy.sh
     environment:
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
