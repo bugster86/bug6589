@@ -54,8 +54,8 @@
     delegate_facts: true
     run_once: true
     when:
-    - "{{ lista_apps.stdout.find("EasyCIM") != -1 }}"
-    - "{{ lista_apps.stdout.find("EasyCIM-3.1.5.15") == -1 }}"
+    - "{{ lista_apps.stdout.find('EasyCIM') != -1 }}"
+    - "{{ lista_apps.stdout.find('EasyCIM-3.1.5.15') == -1 }}"
     
 
 - name: Conferma per l'aggiornamento
