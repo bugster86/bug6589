@@ -8,6 +8,11 @@
     bug: 6589
     
   tasks:
+  - set_fact: precondizioni=true
+    delegate_to: localhost
+    delegate_facts: true
+    run_once: true
+    
   - name: controllo la versione di contact
     shell: "rpm -q cth-libs | grep {{ contact_minimum_version }}"
     check_mode: false
@@ -16,6 +21,11 @@
     register: contact_version
   
   - block:
+    - set_fact: precondizioni=false
+      delegate_to: localhost
+      delegate_facts: true
+      run_once: true
+      
     - fail: msg="Contact deve essere alla versione {{ contact_minimum_version }} almeno. Non posso proseguire"
     - meta: end_play
     when: contact_version.rc != 0
@@ -30,6 +40,7 @@
     logfile: /var/log/ansible_reitek.log
   
   tasks:
+  - include: include/check_precondizione.yml  
   - name: resoconto in file {{ logfile }}
     shell: echo "Applicato il bug {{bug}} (UPGRADE_EASYCIM 3.6.3) dall'utente $USER in data $(date +%d-%m-%Y_%H:%M:%S) sui server {{inventory_hostname}} " >> {{ logfile }}
     changed_when: false
@@ -69,6 +80,7 @@
   any_errors_fatal: true
   
   tasks:
+  - include: include/check_precondizione.yml  
   - include: include/check_conferma.yml
     run_once: true
     
@@ -94,7 +106,8 @@
     jdk8_version: 'jdk1.8.0_171'
     src_query_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/query.properties'
   
-  tasks: 
+  tasks:
+  - include: include/check_precondizione.yml  
   - include: include/check_conferma.yml
   - include: include/mapping_applications.yml
   - include: include/jdk8.yml
@@ -109,6 +122,7 @@
   
   
   tasks:
+  - include: include/check_precondizione.yml  
   - include: include/check_conferma.yml
   # Siamo già sulle macchine balancer e possiamo applicare comodamente il role 6379
   - include_role: name=6379
@@ -116,14 +130,6 @@
         logfile: /var/log/ansible_reitek.log
         bug: 6379
 
-  handlers:
-  - shell: nginx -t
-    changed_when: false
-    register: sintassi_nginx
-    listen: "reload_nginx"
-  - service: name=nginx state=reloaded
-    when: sintassi_nginx.rc == 0
-    listen: "reload_nginx"
 
 - name: stoppa l'ormai inutile pentaho
   hosts: "{{ pentaho }}"
@@ -131,6 +137,7 @@
   any_errors_fatal: true
   
   tasks: 
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - include: include/present_tomcat.yml
   
@@ -144,6 +151,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks: 
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - include: include/etl_step1.yml
 
@@ -158,6 +166,7 @@
     cartella: /tmp/liquibase_pentaho/3.3.0.4
   
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - include: include/database_step.yml 
 
@@ -170,6 +179,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - include: include/install_report.yml
 
@@ -183,6 +193,7 @@
     src_rdp: /mnt/qasr/Statistics/CTReport/RC
   
   tasks: 
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - include: include/etl_step2.yml
    
@@ -195,6 +206,7 @@
     src_timezone_script: /mnt/qasr/EasyCIM/Server/3.6.3_RC/scripts
   
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
     unarchive:
@@ -220,6 +232,7 @@
     apps_src: '/mnt/qasr/EasyCIM/Server/3.6.3_RC/3.6.3-1_RC!!/'
     
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - name: "Creo la cartella {{ dir_upload }}"
     file: state=directory path="{{ dir_upload }}" owner=root group=root mode=0777
@@ -235,6 +248,7 @@
     dir_upload: '/tmp/EC363/'
   
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   # voglio evitare che ci siano dei problemi nell'undeploy delle applicazioni
   - name: riavvio preventivo del glassfish 
@@ -250,6 +264,7 @@
   hosts: all
   
   tasks:
+  - include: include/check_precondizione.yml    
   - include: include/check_conferma.yml
   - shell: updatedb
   - shell: systemctl daemon-reload
