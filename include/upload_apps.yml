@@ -60,13 +60,30 @@
 
 # callback
 
-- name: upload war EasyCallBackRemapper-
-  copy:
+- block:
+  - name: upload war EasyCallBackRemapper-
+    copy:
       group: root
       owner: root
       mode: 0777
       src: "{{ item }}"
       dest: "{{ dir_upload }}"
-  with_fileglob:
-  - "{{ apps_src }}/EasyCallBackRemapper-*"
+    with_fileglob:
+    - "{{ apps_src }}/EasyCallBackRemapper-*"
+  
+  - shell: ls -1 EasyCallBackRemapper-*
+    chdir: "{{ dir_upload }}"
+    register: callback_app
+    
+  - name: deploya l'applicazione EasyCallBackRemapper
+    shell: asadmin deploy --contextroot ProActiveCallBackV2.0 {{ callback_app.stdout }}
+    environment:
+          PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  
+  # dopo aver deployato l'applicazione la cancello da {{ dir_upload }} per non dar fastidio a autoDeploy.sh
+  
+  - file:
+      state: absent
+      path: "{{ dir_upload }}/{{ callback_app.stdout }}"
+  
   when: callback == true
