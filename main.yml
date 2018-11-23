@@ -237,6 +237,8 @@
   tasks:
   - include: include/check_conferma.yml
   - shell: /usr/local/bin/autodeploy.sh
+    environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
     args:
      chdir: "{{ dir_upload }}"
 
