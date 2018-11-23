@@ -30,6 +30,34 @@
     - meta: end_play
     when: contact_version.rc != 0
 
+
+# Se trovo un ECAS easycim con a bordo l'applicazione EasyCIM che non è alla versione 3.5.15
+# l'aggiornamento deve fallire
+- name: Controllo la versione di partenza di EasyCIM
+  hosts: "*-cti1"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks:
+  - name: asadmin list-applications
+    shell: asadmin --terse list-applications
+    environment:
+          PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+    failed_when: false
+    changed_when: false
+    check_mode: false
+    register: lista_apps
+    
+  # Se ho trovato un EasyCIM ma non ho trovato un   EasyCIM-3.1.5.15 --> precondizioni= false
+  - set_fact: precondizioni=false
+    delegate_to: localhost
+    delegate_facts: true
+    run_once: true
+    when:
+    - "{{ lista_apps.stdout.find("EasyCIM") != -1 }}"
+    - "{{ lista_apps.stdout.find("EasyCIM-3.1.5.15") == -1 }}"
+    
+
 - name: Conferma per l'aggiornamento
   hosts: "*-cti1"
   gather_facts: true
