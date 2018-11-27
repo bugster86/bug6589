@@ -245,7 +245,10 @@
        mode: 0777
   - name: eseguo lo script USE_ME.sh
     shell: /tmp/USE_ME.sh
+    args:
+      chdir: /tmp/
     failed_when: false
+    
   - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
   
 - name: Copio le nuove applicazioni sugli ecas
