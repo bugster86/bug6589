@@ -77,16 +77,18 @@
     register: callback_app
     
   - name: deploya l'applicazione EasyCallBackRemapper
-    shell: asadmin deploy --contextroot ProActiveCallBackV2.0 {{ callback_app.stdout }}
+    shell: "asadmin deploy --contextroot ProActiveCallBackV2.0 {{ callback_app.stdout }}"
     args:
        chdir: "{{ dir_upload }}"
     environment:
           PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+    when: callback_app is defined and callback_app.stdout is defined
   
   # dopo aver deployato l'applicazione la cancello da {{ dir_upload }} per non dar fastidio a autoDeploy.sh
   
   - file:
       state: absent
       path: "{{ dir_upload }}/{{ callback_app.stdout }}"
+    when: callback_app is defined and callback_app.stdout is defined
   
   when: callback == true
