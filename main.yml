@@ -183,6 +183,33 @@
   - include: include/check_conferma.yml
   - include: include/etl_step1.yml
 
+- name: Sezione script timezone mysql + configurazione su tabella easycim.level
+  hosts: "{{ database_master }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_timezone_script: /mnt/qasr/EasyCIM/Server/3.6.3_RC/scripts
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
+    unarchive:
+       src: "{{ src_timezone_script }}/populate_time_zone.tar.gz"
+       dest: /tmp/
+       owner: root
+       group: root
+       mode: 0777
+  - name: eseguo lo script USE_ME.sh
+    shell: /tmp/USE_ME.sh
+    args:
+      chdir: /tmp/
+    failed_when: false
+    
+  - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
+
+
 - name: eseguo le modifiche su database master
   hosts: "{{ database_master }}"
   
@@ -225,31 +252,6 @@
   - include: include/check_conferma.yml
   - include: include/etl_step2.yml
    
-- name: Sezione script timezone mysql + configurazione su tabella easycim.level
-  hosts: "{{ database_master }}"
-  gather_facts: true
-  any_errors_fatal: true
-  
-  vars:
-    src_timezone_script: /mnt/qasr/EasyCIM/Server/3.6.3_RC/scripts
-  
-  tasks:
-  - include: include/check_precondizione.yml    
-  - include: include/check_conferma.yml
-  - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
-    unarchive:
-       src: "{{ src_timezone_script }}/populate_time_zone.tar.gz"
-       dest: /tmp/
-       owner: root
-       group: root
-       mode: 0777
-  - name: eseguo lo script USE_ME.sh
-    shell: /tmp/USE_ME.sh
-    args:
-      chdir: /tmp/
-    failed_when: false
-    
-  - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
   
 - name: Copio le nuove applicazioni sugli ecas
   hosts: "*-ecas*"
