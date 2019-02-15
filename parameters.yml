@@ -1,5 +1,0 @@
-mongo_primary: alpha-ecas1
-balancer: [alpha-ecas1]
-pentaho: alpha-cti1
-etl: alpha-ecas1
-database_master: alpha-ecas1

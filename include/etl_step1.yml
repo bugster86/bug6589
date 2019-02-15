@@ -24,4 +24,15 @@
     owner: root
     group: root
     mode: 0664
-    
+
+- name: Mi accerto che nel file /root/.kettle/kettle.properties ci sia la direttiva KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL=N
+  lineinfile:
+        backup: true
+        dest: /root/.kettle/kettle.properties
+        state: present
+        create: yes
+        line: 'KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL=N'
+        regexp: '^KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL'
+        mode: 0644
+        owner: root
+        group: root    
