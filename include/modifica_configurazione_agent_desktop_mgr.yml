@@ -1,0 +1,37 @@
+- name: Verifico la presenza del file di configurazione /etc/opt/reitek/admanager/config/mongodb.properties
+  stat: path=/etc/opt/reitek/admanager/config/mongodb.properties
+  register: conf_admanager_6589
+  
+- block:
+  - name: rimuovo la riga mongodb.host
+    lineinfile:
+            state: absent
+            dest: /etc/opt/reitek/admanager/config/mongodb.properties
+            regexp: '^mongodb\.host'
+            backup: true
+  - name: rimuovo la riga mongodb.host
+    lineinfile:
+            state: absent
+            dest: /etc/opt/reitek/admanager/config/mongodb.properties
+            regexp: '^mongodb\.port'
+            backup: true
+            
+  - name: estraggo i nodi del cluster mongodb
+    shell: mongo --eval "printjson(rs.conf())" | grep host | cut -d "\"" -f4 | paste -sd "," -
+    failed_when: false
+    changed_when: false
+    check_mode: false
+    register: nodi_cluster
+    delegate_to: "{{ mongo_primary }}"
+    
+  - set_fact: puntamento='localhost:27017'
+  - set_fact: puntamento={{ nodi_cluster.stdout }}
+    when: nodi_cluster.stdout != ""
+
+  - name: Aggiungo la direttiva mongodb.replica.set nel file  /etc/opt/reitek/admanager/config/mongodb.properties   
+    lineinfile:
+            state: present
+            dest: /etc/opt/reitek/admanager/config/mongodb.properties
+            line: "{{ puntamento }}"
+            insertbefore: BOF          
+  when: conf_admanager_6589.stat.exists

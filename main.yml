@@ -286,6 +286,7 @@
   # voglio evitare che ci siano dei problemi nell'undeploy delle applicazioni
   - name: riavvio preventivo del glassfish 
     service: name=glassfish state=restarted
+  - include: include/modifica_configurazione_agent_desktop_mgr.yml
   - pause: seconds=10
   - shell: /usr/local/bin/autodeploy.sh
     environment:
