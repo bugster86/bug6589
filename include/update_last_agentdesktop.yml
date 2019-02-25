@@ -1,0 +1,37 @@
+- block:
+  - name: recupero l'ultima versione di AgentDesktop
+    shell: ls -dtr1 /mnt/qasr/EasyCIM/AgentDesktop_HTML5/AD_* | grep -v "_RC" | tail -n 1
+    failed_when: false
+    changed_when: false
+    check_mode: false
+    register: path_last_agentdesktop
+  delegate_to: localhost
+  run_once: true
+  
+- name: cancello il link /usr/share/nginx/html/AD
+  file:
+      follow: no
+      state: absent
+      path: /usr/share/nginx/html/AD
+      
+- name: copio la cartella di AgentDesktop
+  copy:
+      src: "{{ path_last_agentdesktop.stdout }}"
+      dest: /usr/share/nginx/html/
+      owner: nginx
+      group: nginx
+      mode: 0775
+      directory_mode: 0775
+      
+- name: ricreo il link /usr/share/nginx/html/AD
+  shell: "ln -s {{ path_last_agentdesktop.stdout.split('/')[-1] }} AD"
+  args:
+      chdir: /usr/share/nginx/html/
+      
+- name: Sistemo i permessi anche per il link creato
+  file:
+      follow: false
+      path: /usr/share/nginx/html/AD
+      owner: nginx
+      group: nginx
+      mode: 0775

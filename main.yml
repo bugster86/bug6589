@@ -158,6 +158,9 @@
         logfile: /var/log/ansible_reitek.log
         bug: 6379
 
+  - name: Aggiorna all'ultima versione di AgentDesktop
+    include: include/update_last_agentdesktop.yml
+    when: update_agentdesktop is defined and update_agentdesktop == true
 
 - name: stoppa l'ormai inutile pentaho
   hosts: "{{ pentaho }}"
