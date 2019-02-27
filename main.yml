@@ -189,7 +189,7 @@
   any_errors_fatal: true
   
   vars:
-    src_timezone_script: /mnt/qasr/EasyCIM/Server/3.6.3_RC/scripts
+    src_timezone_script: /mnt/qasr/EasyCIM/Server/current_3.6.3/scripts
   
   tasks:
   - include: include/check_precondizione.yml    
@@ -262,7 +262,7 @@
   vars:
     dir_upload: '/tmp/EC363/'
     easyintegration_src: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/'
-    apps_src: '/mnt/qasr/EasyCIM/Server/3.6.3_RC/3.6.3-1_RC!!/'
+    apps_src: '/mnt/qasr/EasyCIM/Server/current_3.6.3/'
     
   tasks:
   - include: include/check_precondizione.yml    
