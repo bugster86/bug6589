@@ -32,6 +32,6 @@
     lineinfile:
             state: present
             dest: /etc/opt/reitek/admanager/config/mongodb.properties
-            line: "{{ puntamento }}"
+            line: "mongodb.replica.set={{ puntamento }}"
             insertbefore: BOF          
   when: conf_admanager_6589.stat.exists
