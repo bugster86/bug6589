@@ -62,14 +62,26 @@
   
   
 ## undeploy delle componenti che non sono più necessarie
-- name: undeploy FormConfigurator e Callback
-  shell: "asadmin undeploy {{ item }}"
+#- name: undeploy FormConfigurator e Callback
+#  shell: "asadmin undeploy {{ item }}"
+#  environment:
+#        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
+#  failed_when: false
+#  with_items: 
+#  - "{{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}}"
+#  - "{{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}}"
+ 
+- name: undeploy FormConfigurator
+  shell: "asadmin undeploy {{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}} "
   environment:
-        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
-  failed_when: false
-  with_items: 
-  - "{{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}}"
-  - "{{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}}"
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  when: lista_applicazioni.stdout.find("FormConfigurator-") != -1
+        
+- name: undeploy Callback
+  shell: "asadmin undeploy {{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}} "
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  when: lista_applicazioni.stdout.find("EasyCallBack-") != -1
     
 - stat: path=/etc/opt/reitek/easyintegration/config/query.properties
   register: query_properties
