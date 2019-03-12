@@ -1,6 +1,18 @@
 - name: stoppo il servizio crond    
   service: name=crond state=stopped
 
+# Se esiste la cartella /opt/pentaho/statistics ci possiamo copiare dentro la cartella lib
+- stat: path=/opt/pentaho/statistics
+  register: dirlib
+  
+- copy: 
+    src: "{{ src_rdp }}/lib"
+    dest: /opt/pentaho/statistics/
+    owner: root
+    group: root
+    mode: 0755
+  when: dirlib.stat.exists
+
 - name: scompatto la cartella {{ src_rdp }}/etl.tar.gz
   unarchive:
     src: "{{ src_rdp }}/etl.tar.gz"
