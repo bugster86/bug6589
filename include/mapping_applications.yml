@@ -81,7 +81,7 @@
   shell: "asadmin undeploy {{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}} "
   environment:
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
-  when: lista_applicazioni.stdout.find("EasyCallBack-") != -1
+  when: lista_applicazioni.stdout.find("EasyCallBack") != -1
     
 - stat: path=/etc/opt/reitek/easyintegration/config/query.properties
   register: query_properties
