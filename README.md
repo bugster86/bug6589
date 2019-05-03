@@ -5,7 +5,8 @@ Aggiorna un sistema EasyCIM alla versione 3.6.3-X
 
 Requisiti
 ------------
-La versione di Contact deve essere almeno una versione 7.0.5-2
+La versione di Contact deve essere almeno una versione 7.0.5-2.
+modifica
 
 Variabili
 --------------
