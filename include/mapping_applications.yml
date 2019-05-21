@@ -83,16 +83,21 @@
         PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
   when: lista_applicazioni.stdout.find("EasyCallBack") != -1
     
-- stat: path=/etc/opt/reitek/easyintegration/config/query.properties
-  register: query_properties
+# Aggiornamento eventuale di tutti i file di properties necessari per easyintegration
+- block:
+  - template:
+       src: "{{ dir_file_properties }}{{ item }}.j2"
+       dest: "/etc/opt/reitek/easyintegration/config/{{ item }}"
+       owner: root
+       group: root
+       mode: 0644
+       backup: true
+    with_items:
+    - query.properties
+    - easyintegration.properties
+    - query_massive_email_historization.properties
+    - regexp.properties
+    - x2l.properties
 
-- name: aggiorno il file  /etc/opt/reitek/easyintegration/config/query.properties
-  copy:
-    src: "{{ src_query_properties }}"
-    dest: /etc/opt/reitek/easyintegration/config/query.properties
-    backup: true
-    owner: root
-    group: root
-    mode: 0644
-
+  when: easyintegration
   

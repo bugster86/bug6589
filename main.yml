@@ -132,7 +132,7 @@
     jdk8_path: '/mnt/qasr/Vendors/Oracle/JDK/jdk-8u171-linux-x64.tar.gz'
     jdk8_shortversion: '1.8.0_171' # questa la usiamo solo per controllare l'output del comando version
     jdk8_version: 'jdk1.8.0_171'
-    src_query_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/query.properties'
+    dir_file_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/'
   
   tasks:
   - include: include/check_precondizione.yml  
@@ -282,7 +282,7 @@
   # definisco dove trovare i war delle applicazioni su filesystem
   vars:
     dir_upload: '/tmp/EC363/'
-    easyintegration_src: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/'
+    easyintegration_src: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/'
     apps_src: '/mnt/qasr/EasyCIM/Server/current_3.6.3/'
     
   tasks:
