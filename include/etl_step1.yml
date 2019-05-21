@@ -1,0 +1,50 @@
+- name: stoppo il servizio crond    
+  service: name=crond state=stopped
+
+# Se esiste la cartella /opt/pentaho/statistics ci possiamo copiare dentro la cartella lib
+- stat: path=/opt/pentaho/statistics
+  register: dirlib
+  
+- copy: 
+    src: "{{ src_rdp }}/lib"
+    dest: /opt/pentaho/statistics/
+    owner: root
+    group: root
+    mode: 0755
+  when: dirlib.stat.exists
+
+- name: scompatto la cartella {{ src_rdp }}/etl.tar.gz
+  unarchive:
+    src: "{{ src_rdp }}/etl.tar.gz"
+    dest: /var/opt/pentaho/statistics/
+ 
+- file: state=absent path=/var/opt/pentaho/data-integration
+
+- name: scompatto la cartella 
+  unarchive:
+    src: "{{ src_rdp }}/pentaho8/pdi-ce-8.0.0.0-28.tar.gz"
+    dest: /var/opt/pentaho/
+    extra_opts: "--overwrite"
+    owner: root
+    group: root
+    mode: 0755
+    
+- name: copio il file mysql-connector-java-5.1.27-bin.jar in  /var/opt/pentaho/data-integration/lib
+  copy:
+    src: "{{ src_rdp }}/vendors/lib/mysql-connector-java-5.1.27-bin.jar"
+    dest: /var/opt/pentaho/data-integration/lib
+    owner: root
+    group: root
+    mode: 0664
+
+- name: Mi accerto che nel file /root/.kettle/kettle.properties ci sia la direttiva KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL=N
+  lineinfile:
+        backup: true
+        dest: /root/.kettle/kettle.properties
+        state: present
+        create: yes
+        line: 'KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL=N'
+        regexp: '^KETTLE_EMPTY_STRING_DIFFERS_FROM_NULL'
+        mode: 0644
+        owner: root
+        group: root    

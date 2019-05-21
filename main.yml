@@ -1,0 +1,329 @@
+- name: Controllo della versione minima di Contact
+  hosts: "*-cti1"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    contact_minimum_version: '7.0.5-2'
+    bug: 6589
+    
+  tasks:
+  - set_fact: precondizioni=true
+    delegate_to: localhost
+    delegate_facts: true
+    run_once: true
+    
+  - name: controllo la versione di contact
+    shell: "rpm -q cth-libs | grep {{ contact_minimum_version }}"
+    check_mode: false
+    failed_when: false
+    changed_when: false
+    register: contact_version
+  
+  - block:
+    - set_fact: precondizioni=false
+      delegate_to: localhost
+      delegate_facts: true
+      run_once: true
+      
+    - fail: msg="Contact deve essere alla versione {{ contact_minimum_version }} almeno. Non posso proseguire"
+    - meta: end_play
+    when: contact_version.rc != 0
+
+
+# Se trovo un ECAS easycim con a bordo l'applicazione EasyCIM che non è alla versione 3.5.15
+# l'aggiornamento deve fallire
+- name: Controllo la versione di partenza di EasyCIM
+  hosts: "*-cti1"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks:
+  - name: asadmin list-applications
+    shell: asadmin --terse list-applications
+    environment:
+          PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+    failed_when: false
+    changed_when: false
+    check_mode: false
+    register: lista_apps
+    
+  # Se ho trovato un EasyCIM ma non ho trovato un   EasyCIM-3.1.5.15 --> precondizioni= false
+  - set_fact: precondizioni=false
+    delegate_to: localhost
+    delegate_facts: true
+    run_once: true
+    when:
+    - "{{ lista_apps.stdout.find('EasyCIM') != -1 }}"
+    - "{{ lista_apps.stdout.find('EasyCIM-3.1.5.15') == -1 }}"
+    
+
+- name: Conferma per l'aggiornamento
+  hosts: "*-cti1"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    bug: 6589
+    logfile: /var/log/ansible_reitek.log
+  
+  tasks:
+  - include: include/check_precondizione.yml  
+  - name: resoconto in file {{ logfile }}
+    shell: echo "Applicato il bug {{bug}} (UPGRADE_EASYCIM 3.6.3) dall'utente $USER in data $(date +%d-%m-%Y_%H:%M:%S) sui server {{inventory_hostname}} " >> {{ logfile }}
+    changed_when: false
+    delegate_to: localhost
+
+  - name: resoconto in database ansible
+    shell: mysql --user=ansible_update --password=$(cat /home/password_insert) -e "insert into ansible.bugs values ( '{{bug}}','$USER','$(date +%d-%m-%Y_%H:%M:%S)','{{inventory_hostname}}');"
+    changed_when: false
+    delegate_to: localhost
+    
+    
+  - set_fact: conferma=true
+    delegate_to: localhost
+    delegate_facts: true
+  
+  - block:  
+    - name: Conferma la volontà di voler aggiornare
+      pause: prompt='Per favore conferma la volontà di aggiornare Easycim alla versione 3.6.3! digita yes per proseguire. Premi Ctrl+c e poi "a" per interrompere'
+      register: risposta
+        
+        
+    - block:
+      - set_fact: conferma=false
+        delegate_to: localhost
+        delegate_facts: true
+      - meta: end_play              # dico all'applicazione di uscire da questo play ma setto anche il facts a false per non far eseguire gli altri play
+      when: not risposta.user_input == "yes"
+    when: ( AUTO is not defined or  ( AUTO is defined and AUTO != "true" )) and ansible_check_mode != true
+      
+    
+
+
+
+- name: Modifica URL ec3FormConfigurator
+  hosts: "{{ mongo_primary }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks:
+  - include: include/check_precondizione.yml  
+  - include: include/check_conferma.yml
+    run_once: true
+    
+  - name: copia del file update_path_form.js
+    copy:
+      dest: /tmp/
+      src: files/update_path_form.js
+      owner: root
+      group: root
+      mode: 0777
+  - shell: mongo admanager /tmp/update_path_form.js  
+  - name: elimina il file /tmp/update_path_form.js
+    file: path=/tmp/update_path_form state=absent 
+    
+- name: mapping delle applicazioni sugli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    jdk8_path: '/mnt/qasr/Vendors/Oracle/JDK/jdk-8u171-linux-x64.tar.gz'
+    jdk8_shortversion: '1.8.0_171' # questa la usiamo solo per controllare l'output del comando version
+    jdk8_version: 'jdk1.8.0_171'
+    src_query_properties: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/query.properties'
+  
+  tasks:
+  - include: include/check_precondizione.yml  
+  - include: include/check_conferma.yml
+  - include: include/mapping_applications.yml
+  - include: include/jdk8.yml
+  
+- name: Operazioni sugli NGINX
+  hosts: "{{ balancer }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  
+  
+  
+  
+  tasks:
+  - include: include/check_precondizione.yml  
+  - include: include/check_conferma.yml
+  - replace:
+        backup: true
+        regexp: 'index  index.html index.htm;'
+        replace: 'rewrite ^/$ /EasyCIM/ permanent;'
+        path: /etc/nginx/conf.d/SSL_handle_agentdesktop.conf
+    notify: reload_nginx_6589
+
+  # Siamo già sulle macchine balancer e possiamo applicare comodamente il role 6379
+  - include_role: name=6379
+    vars:
+        logfile: /var/log/ansible_reitek.log
+        bug: 6379
+
+  handlers:
+   - name: Controlla la sintassi del file di configurazione nginx
+     shell: nginx -t
+     changed_when: false
+     check_mode: false
+     register: sintassi_nginx
+     listen: reload_nginx_6589
+   - debug: msg="[ATTENZIONE] La sintassi del file di configurazione nginx non è corretta"
+     when: sintassi_nginx.rc != 0
+     listen: reload_nginx_6589
+   - name: Reload del processo nginx
+     service: name=nginx state=reloaded
+     when: sintassi_nginx.rc == 0
+     listen: reload_nginx_6589
+
+- name: stoppa l'ormai inutile pentaho
+  hosts: "{{ pentaho }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  tasks: 
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - include: include/present_tomcat.yml
+  
+- name: eseguo la prima parte degli step sul server etl
+  hosts: "{{ etl }}"
+  
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks: 
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - include: include/etl_step1.yml
+
+- name: Sezione script timezone mysql + configurazione su tabella easycim.level
+  hosts: "{{ database_master }}"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_timezone_script: /mnt/qasr/EasyCIM/Server/current_3.6.3/scripts
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - name: Scompatto il contenuto di {{ src_rdp }}/populate_time_zone.tar.gz in /tmp/
+    unarchive:
+       src: "{{ src_timezone_script }}/populate_time_zone.tar.gz"
+       dest: /tmp/
+       owner: root
+       group: root
+       mode: 0777
+  - name: eseguo lo script USE_ME.sh
+    shell: /tmp/USE_ME.sh
+    args:
+      chdir: /tmp/
+    failed_when: false
+    
+  - shell: mysql -e "update easycim.level set can_manage_contacts=1 where key_code='SUPERVISORE_PARTNER_ONLINE'"
+
+
+- name: eseguo le modifiche su database master
+  hosts: "{{ database_master }}"
+  
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+    cartella: /tmp/liquibase_pentaho/3.3.0.4
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - include: include/database_step.yml 
+
+- name: Installo i report su tutti gli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - include: include/install_report.yml
+
+- name: eseguo la seconda parte degli step sul server etl
+  hosts: "{{ etl }}"
+  
+  gather_facts: true
+  any_errors_fatal: true
+  
+  vars:
+    src_rdp: /mnt/qasr/Statistics/CTReport/RC
+  
+  tasks: 
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - include: include/etl_step2.yml
+   
+  
+- name: Copio le nuove applicazioni sugli ecas
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  
+  # definisco dove trovare i war delle applicazioni su filesystem
+  vars:
+    dir_upload: '/tmp/EC363/'
+    easyintegration_src: '/mnt/qasr/EasyCIM/EasyIntegration/3.3/3.3_RC/'
+    apps_src: '/mnt/qasr/EasyCIM/Server/current_3.6.3/'
+    
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - name: "Creo la cartella {{ dir_upload }}"
+    file: state=directory path="{{ dir_upload }}" owner=root group=root mode=0777
+  - include: include/upload_apps.yml
+  
+- name: Lancio lo script di autodeploy
+  hosts: "*-ecas*"
+  gather_facts: true
+  any_errors_fatal: true
+  serial: 1 # L'operazione è eseguita in maniera seriale sugli ecas
+  
+  vars:
+    dir_upload: '/tmp/EC363/'
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  # voglio evitare che ci siano dei problemi nell'undeploy delle applicazioni
+  - name: riavvio preventivo del glassfish 
+    service: name=glassfish state=restarted
+  - include: include/modifica_configurazione_agent_desktop_mgr.yml
+  - pause: seconds=10
+  - shell: /usr/local/bin/autodeploy.sh
+    environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+    args:
+     chdir: "{{ dir_upload }}"
+     
+- name: Azioni finali accessorie
+  hosts: all
+  
+  tasks:
+  - include: include/check_precondizione.yml    
+  - include: include/check_conferma.yml
+  - shell: updatedb
+  - shell: systemctl daemon-reload
+    
+    
+       
+    

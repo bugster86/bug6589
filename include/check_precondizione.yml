@@ -1,0 +1,7 @@
+- block:
+  - meta: end_play
+  when: hostvars['localhost']['precondizioni'] is defined and hostvars['localhost']['precondizioni'] == false
+  
+
+
+

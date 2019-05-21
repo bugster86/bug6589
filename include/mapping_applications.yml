@@ -1,0 +1,98 @@
+# Assumo che inizialmente non ci sia nessuna applicazione sul server
+- set_fact:
+    admanager: false
+    easycim: false
+    easyintegration: false
+    taskmanager: false
+    workflow: false
+    callback: true 
+
+
+
+# stampa la lista delle applicazioni
+- name: recupero la lista delle applicazioni
+  shell: asadmin --terse list-applications
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  failed_when: false
+  changed_when: false
+  check_mode: false
+  register: lista_applicazioni
+
+- set_fact:
+      admanager: true     
+  when: lista_applicazioni.stdout.find("agentdesktopmanager-") != -1
+
+- set_fact:
+      easycim: true   
+  when: lista_applicazioni.stdout.find("EasyCIM-") != -1
+
+- set_fact:
+      easyintegration: true
+  when: lista_applicazioni.stdout.find("easyintegration-") != -1
+
+- set_fact:
+      taskmanager: true 
+  when: lista_applicazioni.stdout.find("TaskManagerSystem-") != -1
+
+
+- set_fact:
+      workflow: true   
+  when: lista_applicazioni.stdout.find("WorkflowManager-") != -1
+  
+
+- set_fact:
+      callback: true   
+  when: lista_applicazioni.stdout.find("EasyCallBack") != -1
+
+- name: recupero l'eventuale context root dell'applicazione Callback
+  shell: asadmin get "*" | grep -i callback | grep context
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  register: context1
+  
+- set_fact:
+      context_cb: context1.stdout
+  when: context1.stdout != "" and context1.rc == 0
+  
+  
+  
+  
+## undeploy delle componenti che non sono più necessarie
+#- name: undeploy FormConfigurator e Callback
+#  shell: "asadmin undeploy {{ item }}"
+#  environment:
+#        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"  
+#  failed_when: false
+#  with_items: 
+#  - "{{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}}"
+#  - "{{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}}"
+ 
+- name: undeploy FormConfigurator
+  shell: "asadmin undeploy {{ ( lista_applicazioni.stdout | regex_search(('FormConfigurator.*')) ).split(' ')[0]}} "
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  when: lista_applicazioni.stdout.find("FormConfigurator-") != -1
+        
+- name: undeploy Callback
+  shell: "asadmin undeploy {{ ( lista_applicazioni.stdout | regex_search(('EasyCallBack.*')) ).split(' ')[0]}} "
+  environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/java/default/bin:/opt/glassfish/bin/"
+  when: lista_applicazioni.stdout.find("EasyCallBack") != -1
+    
+- stat: path=/etc/opt/reitek/easyintegration/config/query.properties
+  register: query_properties
+
+- name: aggiorno il file  /etc/opt/reitek/easyintegration/config/query.properties
+  copy:
+    src: "{{ src_query_properties }}"
+    dest: /etc/opt/reitek/easyintegration/config/query.properties
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
+
+  

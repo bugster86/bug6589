@@ -1,0 +1,7 @@
+- block:
+  - meta: end_play
+  when: hostvars['localhost']['conferma'] is defined and hostvars['localhost']['conferma'] == false
+  
+
+
+

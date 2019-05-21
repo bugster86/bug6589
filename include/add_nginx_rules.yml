@@ -1,0 +1,39 @@
+- shell: grep ProActiveCallBackV /etc/nginx/conf.d/SSL_handle_agentdesktop.conf
+  check_mode: false
+  changed_when: false
+  failed_when: false
+  register: check1_nginx
+  
+- shell: grep CallBackPortal /etc/nginx/conf.d/SSL_handle_agentdesktop.conf
+  check_mode: false
+  changed_when: false
+  failed_when: false
+  register: check2_nginx
+  
+- name: Eseguo l'inserimento delle nuove regole di CallBack
+  notify: reload_nginx
+  insert_before: 'location /EasyCIM'
+  blockinfile:
+    backup: true
+    path: /etc/nginx/conf.d/SSL_handle_agentdesktop.conf
+    block: |
+       location /ProActiveCallBackV2.0 {
+                rewrite ^/ProActiveCallBackV2.0/CallBackLater(.*) /EasyCIM/easyCallback/later$1 break;
+                rewrite ^/ProActiveCallBackV2.0/CallBackNow(.*) /EasyCIM/easyCallback/now$1 break;
+                rewrite ^/ProActiveCallBackV2.0/CallBackFirstSlot(.*) /EasyCIM/easyCallback/firstSlot$1 break;
+                rewrite ^/ProActiveCallBackV2.0/checkCallbackAvailable(.*) /EasyCIM/easyCallback/checkCallbackAvailable$1 break;
+                proxy_set_header Cookie $arg_cookiename=$arg_cookievalue;
+                proxy_pass http://servereasycim3;
+        }
+
+
+        location /CallBackPortal {
+                rewrite ^/CallBackPortal/CallBackLater(.*) /EasyCIM/easyCallback/later$1 break;
+                rewrite ^/CallBackPortal/CallBackNow(.*) /EasyCIM/easyCallback/now$1 break;
+                rewrite ^/CallBackPortal/CallBackFirstSlot(.*) /EasyCIM/easyCallback/firstSlot$1 break;
+                rewrite ^/CallBackPortal/checkCallbackAvailable(.*) /EasyCIM/easyCallback/checkCallbackAvailable$1 break;
+                proxy_set_header Cookie $arg_cookiename=$arg_cookievalue;
+                proxy_pass http://servereasycim3;
+        }
+
+      
