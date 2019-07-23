@@ -23,6 +23,9 @@
     src: /mnt/qasr/Vendors/Oracle/JDK/jdk-7u40-linux-x64.tar.gz
     dest: /
   when: jdk_6589 is defined and jdk_6589.stat.exists == false
+
+- name: concedo i permessi SUPER per l'utente easycim
+  shell: mysql -e "grant SUPER on *.* to 'easycim'@'%';"
   
 - name: eseguo gli Step di liquibase
   shell: chdir="{{ cartella }}" java -jar liquibase.jar --driver=com.mysql.jdbc.Driver --classpath=mysql-connector-java-5.1.27-bin.jar --changeLogFile={{ item.codice }} --url="jdbc:mysql://"{{ ansible_hostname }}":3306/"{{ item.schema }}"" --username='easycim' --password='3a$yc1m_{{ database_master.split('-')[0] }}' update
@@ -32,6 +35,9 @@
   - { codice: 'statistics_dwh_changeLog.xml' , schema: 'statistics_dwh' }
   - { codice: 'statistics_config_changeLog.xml' , schema: 'statistics_config' }
   - { codice: 'statistics_staging_changeLog.xml' , schema: 'statistics_staging' }
+
+- name: revoco i permessi SUPER per l'utente easycim
+  shell: mysql -e "revoke SUPER on *.* FROM 'easycim'@'%'"
 
 - name: cancello la cartella "{{ cartella }}"
   file:
