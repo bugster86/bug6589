@@ -197,7 +197,7 @@
   any_errors_fatal: true
   
   vars:
-    src_rdp: /mnt/qasr/Statistics/CTReport/2019-07-22_v3_3_0_6
+    src_rdp: /mnt/qasr/Statistics/CTReport/2019-09-17_v3_3_0_7
   
   tasks: 
   - include: include/check_precondizione.yml    
@@ -238,7 +238,7 @@
   any_errors_fatal: true
   
   vars:
-    src_rdp: /mnt/qasr/Statistics/CTReport/2019-07-22_v3_3_0_6
+    src_rdp: /mnt/qasr/Statistics/CTReport/2019-09-17_v3_3_0_7
     cartella: /tmp/liquibase_pentaho/3.3.0.6
   
   tasks:
@@ -252,7 +252,7 @@
   any_errors_fatal: true
   
   vars:
-    src_rdp: /mnt/qasr/Statistics/CTReport/2019-07-22_v3_3_0_6
+    src_rdp: /mnt/qasr/Statistics/CTReport/2019-09-17_v3_3_0_7
   
   tasks:
   - include: include/check_precondizione.yml    
@@ -266,7 +266,7 @@
   any_errors_fatal: true
   
   vars:
-    src_rdp: /mnt/qasr/Statistics/CTReport/2019-07-22_v3_3_0_6
+    src_rdp: /mnt/qasr/Statistics/CTReport/2019-09-17_v3_3_0_7
   
   tasks: 
   - include: include/check_precondizione.yml    
