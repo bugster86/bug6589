@@ -17,6 +17,23 @@
   unarchive:
     src: "{{ src_rdp }}/etl.tar.gz"
     dest: /var/opt/pentaho/statistics/
+
+- stat: path=/var/opt/pentaho/statistics/data
+  register: datadir_6589
+
+- block:
+  - name: Eseguo un backup della cartella /var/opt/pentaho/statistics/data
+    shell: mv /var/opt/pentaho/statistics/data /var/opt/pentaho/statistics/data_backup_6589
+
+  - name: Copio la cartella {{ src_rdp }}/data in /var/opt/pentaho/statistics/
+    copy:
+       src: {{ src_rdp }}/data
+       dest: /var/opt/pentaho/statistics/
+       owner: root
+       group: root
+       mode: 0755
+  when: datadir_6589.stat.exists
+
  
 - file: state=absent path=/var/opt/pentaho/data-integration
 
